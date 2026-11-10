@@ -30,18 +30,10 @@ export function createOrbitalMesh(positions: Float32Array, n: number) {
     size: 0.1,
     vertexColors: true,
     transparent: true,
-    opacity: 0.4,
+    opacity: 0, // Starts at 0 for fade-in transition
     blending: THREE.AdditiveBlending,
     depthWrite: false
   });
 
-  const points = new THREE.Points(geometry, material);
-
-  // Add the nucleus
-  const nucleusGeom = new THREE.SphereGeometry(0.15, 16, 16);
-  const nucleusMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-  const nucleus = new THREE.Mesh(nucleusGeom, nucleusMat);
-  points.add(nucleus);
-
-  return points;
+  return new THREE.Points(geometry, material);
 }
