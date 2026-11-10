@@ -8,32 +8,103 @@
     />
     <title>Electron Orbital Visualizer</title>
     <style>
-      html, body { margin: 0; padding: 0; width: 100%; height: 100%; background-color: #0f0f11; overflow: hidden; font-family: system-ui, -apple-system, sans-serif; }
+      html, body { margin: 0; padding: 0; width: 100%; height: 100%; background-color: #050506; overflow: hidden; font-family: system-ui, sans-serif; color: #eee; }
       #orbital-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
-      #fps-counter { position: absolute; top: 10px; left: 10px; z-index: 2; color: #00ffcc; font-size: 14px; font-weight: bold; background: rgba(0,0,0,0.5); padding: 4px 8px; border-radius: 4px; pointer-events: none; }
-      #ui-panel {
-        position: absolute; bottom: 20px; left: 20px; z-index: 2;
-        background: rgba(15, 15, 17, 0.85); padding: 12px 16px; border-radius: 8px;
-        border: 1px solid #333; color: #eee;
+      #fps-counter { position: absolute; top: 10px; right: 10px; z-index: 2; color: #00ffcc; font-size: 12px; font-weight: bold; background: rgba(0,0,0,0.6); padding: 4px 8px; border-radius: 4px; pointer-events: none; }
+      
+      /* Sidebar styles */
+      #sidebar {
+        position: absolute; top: 0; left: 0; height: 100%; width: 300px; z-index: 10;
+        background: rgba(15, 15, 17, 0.9); border-right: 1px solid #333;
+        backdrop-filter: blur(8px); transform: translateX(-100%); transition: transform 0.3s ease;
+        display: flex; flex-direction: column; box-sizing: border-box; padding: 20px; overflow-y: auto;
       }
-      select { background: #222; color: #eee; border: 1px solid #444; padding: 4px 8px; border-radius: 4px; outline: none; }
-      #loading { color: #00ffcc; margin-left: 12px; font-size: 14px; display: none; }
+      #sidebar.open { transform: translateX(0); }
+      #toggle-btn {
+        position: absolute; top: 20px; left: 20px; z-index: 9;
+        background: rgba(15, 15, 17, 0.9); color: #fff; border: 1px solid #333;
+        padding: 8px 12px; cursor: pointer; border-radius: 4px; transition: left 0.3s ease;
+      }
+      #sidebar.open ~ #toggle-btn { left: 320px; }
+      
+      /* Controls */
+      .control-group { margin-bottom: 16px; }
+      .control-group label { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px; color: #aaa; }
+      .control-group input[type="range"] { width: 100%; accent-color: #00ffcc; }
+      .control-group input[type="range"]:disabled { opacity: 0.3; }
+      .control-group select, .control-group button { width: 100%; background: #222; color: #eee; border: 1px solid #444; padding: 6px; border-radius: 4px; cursor: pointer; outline: none; }
+      .control-group button:hover { background: #333; }
+      .control-group .checkbox-label { display: flex; align-items: center; justify-content: flex-start; gap: 8px; cursor: pointer; }
+      
+      #header { font-size: 18px; font-weight: bold; margin-bottom: 20px; color: #00ffcc; text-align: center; }
+      #orbital-label { font-size: 24px; font-weight: 300; text-align: center; margin: 10px 0 20px 0; color: #fff; text-shadow: 0 2px 8px rgba(0,0,0,0.8); }
+      
+      #status-bar { margin-top: auto; padding-top: 16px; border-top: 1px solid #333; font-size: 12px; color: #888; }
+      .loading { color: #ffcc00; display: none; }
+      .loading.active { display: inline-block; animation: pulse 1s infinite alternate; }
+      @keyframes pulse { from { opacity: 0.5; } to { opacity: 1; } }
     </style>
   </head>
   <body>
     <canvas id="orbital-canvas"></canvas>
     <div id="fps-counter">FPS: 0</div>
-    <div id="ui-panel">
-      <label for="orbital-select">Orbital: </label>
-      <select id="orbital-select">
-        <option value="1,0,0">1s</option>
-        <option value="2,0,0">2s</option>
-        <option value="2,1,0" selected>2p (m=0)</option>
-        <option value="3,1,0">3p (m=0)</option>
-        <option value="3,2,0">3d (m=0)</option>
-      </select>
-      <span id="loading">Sampling...</span>
+    
+    <div id="sidebar" class="open">
+      <div id="header">Orbital Controls</div>
+      
+      <div id="orbital-label">2p_z</div>
+      
+      <div class="control-group">
+        <label>Presets</label>
+        <select id="preset-select">
+          <option value="1,0,0">1s</option>
+          <option value="2,0,0">2s</option>
+          <option value="2,1,0">2p_z</option>
+          <option value="2,1,1">2p_x</option>
+          <option value="3,2,0">3d_z²</option>
+          <option value="3,2,1">3d_xz</option>
+          <option value="4,3,0">4f_z³</option>
+          <option value="random">Random orbital</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label><span>n (Principal)</span> <span id="val-n">2</span></label>
+        <input type="range" id="input-n" min="1" max="5" step="1" value="2">
+      </div>
+      <div class="control-group">
+        <label><span>l (Azimuthal)</span> <span id="val-l">1</span></label>
+        <input type="range" id="input-l" min="0" max="4" step="1" value="1">
+      </div>
+      <div class="control-group">
+        <label><span>m (Magnetic)</span> <span id="val-m">0</span></label>
+        <input type="range" id="input-m" min="-4" max="4" step="1" value="0">
+      </div>
+
+      <div class="control-group">
+        <label><span>Points</span> <span id="val-points">100k</span></label>
+        <input type="range" id="input-points" min="10000" max="500000" step="10000" value="100000">
+      </div>
+
+      <div class="control-group" style="display: flex; gap: 8px;">
+        <button id="btn-resample">Resample</button>
+        <button id="btn-reset-view">Reset View</button>
+      </div>
+
+      <div class="control-group">
+        <label class="checkbox-label"><input type="checkbox" id="chk-rotate" checked> Auto-Rotate</label>
+        <label class="checkbox-label"><input type="checkbox" id="chk-axes" checked> Show Axes</label>
+        <label class="checkbox-label"><input type="checkbox" id="chk-nucleus" checked> Show Nucleus</label>
+      </div>
+
+      <div id="status-bar">
+        Status: <span id="status-text">Idle</span> 
+        <span class="loading" id="loading-indicator">(Sampling...)</span><br>
+        <span id="info-line">Points: 0 | Time: 0ms</span>
+      </div>
     </div>
+    
+    <button id="toggle-btn">☰ (H)</button>
     <script type="module" src="./main.ts"></script> 
   </body>
 </html>
