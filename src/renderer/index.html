@@ -14,12 +14,8 @@
         width: 100%;
         height: 100%;
         background-color: #0f0f11;
-        color: #e0e0e0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-family: system-ui, -apple-system, sans-serif;
         overflow: hidden;
+        font-family: system-ui, -apple-system, sans-serif;
       }
       #orbital-canvas {
         position: absolute;
@@ -29,19 +25,25 @@
         height: 100%;
         z-index: 1;
       }
-      #placeholder-text {
+      #fps-counter {
+        position: absolute;
+        top: 10px;
+        left: 10px;
         z-index: 2;
-        font-size: 2.5rem;
-        font-weight: 300;
-        letter-spacing: 0.1em;
+        color: #00ffcc;
+        font-size: 14px;
+        font-weight: bold;
         pointer-events: none;
-        text-shadow: 0 4px 12px rgba(0, 0, 0, 0.8);
+        background: rgba(0, 0, 0, 0.5);
+        padding: 4px 8px;
+        border-radius: 4px;
       }
     </style>
   </head>
   <body>
     <canvas id="orbital-canvas"></canvas>
-    <div id="placeholder-text">Electron Orbital Visualizer</div>
-    <script type="module" src="./renderer.ts"></script>
+    <div id="fps-counter">FPS: 0</div>
+    <!-- Note: We are switching from renderer.ts to main.ts -->
+    <script type="module" src="./main.ts"></script> 
   </body>
 </html>
