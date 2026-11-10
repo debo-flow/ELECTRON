@@ -33,11 +33,19 @@ function assocLegendre(l: number, m: number, x: number): number {
     if (m === 2) return 15 * x * (1 - x * x);
     if (m === 3) return 15 * Math.pow(1 - x * x, 1.5);
   }
+  if (l === 4) { // Added l=4 support for n=5
+    const x2 = x * x;
+    if (m === 0) return 0.125 * (35 * x2 * x2 - 30 * x2 + 3);
+    if (m === 1) return 2.5 * x * (7 * x2 - 3) * Math.sqrt(1 - x2);
+    if (m === 2) return 7.5 * (7 * x2 - 1) * (1 - x2);
+    if (m === 3) return 105 * x * Math.pow(1 - x2, 1.5);
+    if (m === 4) return 105 * Math.pow(1 - x2, 2);
+  }
   return 0;
 }
 
 export function probabilityDensity(n: number, l: number, m: number, x: number, y: number, z: number): number {
-  if (n < 1 || l < 0 || l >= n || Math.abs(m) > l || l > 3) return 0;
+  if (n < 1 || l < 0 || l >= n || Math.abs(m) > l || l > 4) return 0;
 
   const r = Math.sqrt(x * x + y * y + z * z);
   if (r === 0) return l === 0 ? Math.pow(2 / n, 3) / (2 * n) : 0; // Quick origin bailout
