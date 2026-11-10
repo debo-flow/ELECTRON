@@ -1,5 +1,5 @@
 {
-  "name": "electron-orbital-visualizer",
+  "name": "ELECTRON",
   "version": "1.0.0",
   "description": "3D atomic electron orbital visualizer",
   "main": "./out/main/index.js",
