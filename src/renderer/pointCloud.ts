@@ -1,36 +1,47 @@
 import * as THREE from 'three';
 
-export function createTestPointCloud(): THREE.Points {
-  const particleCount = 20000;
-  const radius = 5;
+export function createOrbitalMesh(positions: Float32Array, n: number) {
+  const numPoints = positions.length / 3;
   const geometry = new THREE.BufferGeometry();
-  const positions = new Float32Array(particleCount * 3);
-
-  for (let i = 0; i < particleCount; i++) {
-    // Generate uniform random points inside a sphere
-    const u = Math.random();
-    const v = Math.random();
-    const theta = 2.0 * Math.PI * u;
-    const phi = Math.acos(2.0 * v - 1.0);
-    const r = Math.cbrt(Math.random()) * radius;
-
-    const sinPhi = Math.sin(phi);
-    
-    positions[i * 3] = r * sinPhi * Math.cos(theta);     // x
-    positions[i * 3 + 1] = r * sinPhi * Math.sin(theta); // y
-    positions[i * 3 + 2] = r * Math.cos(phi);            // z
-  }
-
   geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
 
+  const colors = new Float32Array(numPoints * 3);
+  const color = new THREE.Color();
+  const maxRadius = 4 * n * n; // Heuristic for coloring
+
+  for (let i = 0; i < numPoints; i++) {
+    const x = positions[i * 3];
+    const y = positions[i * 3 + 1];
+    const z = positions[i * 3 + 2];
+    const r = Math.sqrt(x * x + y * y + z * z);
+    
+    // Normalize distance and map from Blue (near) to Orange (far)
+    const t = Math.min(r / maxRadius, 1.0);
+    color.setHSL(0.6 - t * 0.5, 1.0, 0.6); 
+    
+    colors[i * 3] = color.r;
+    colors[i * 3 + 1] = color.g;
+    colors[i * 3 + 2] = color.b;
+  }
+
+  geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
   const material = new THREE.PointsMaterial({
-    size: 0.05,
-    color: 0x88ccff, // semi-transparent white-blue
+    size: 0.1,
+    vertexColors: true,
     transparent: true,
-    opacity: 0.6,
+    opacity: 0.4,
     blending: THREE.AdditiveBlending,
-    depthWrite: false // Prevents sorting artifacts with transparency
+    depthWrite: false
   });
 
-  return new THREE.Points(geometry, material);
+  const points = new THREE.Points(geometry, material);
+
+  // Add the nucleus
+  const nucleusGeom = new THREE.SphereGeometry(0.15, 16, 16);
+  const nucleusMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  const nucleus = new THREE.Mesh(nucleusGeom, nucleusMat);
+  points.add(nucleus);
+
+  return points;
 }
