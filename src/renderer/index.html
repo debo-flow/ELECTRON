@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta 
+      http-equiv="Content-Security-Policy" 
+      content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;" 
+    />
+    <title>Electron Orbital Visualizer</title>
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #0f0f11;
+        color: #e0e0e0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: system-ui, -apple-system, sans-serif;
+        overflow: hidden;
+      }
+      #orbital-canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+      }
+      #placeholder-text {
+        z-index: 2;
+        font-size: 2.5rem;
+        font-weight: 300;
+        letter-spacing: 0.1em;
+        pointer-events: none;
+        text-shadow: 0 4px 12px rgba(0, 0, 0, 0.8);
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="orbital-canvas"></canvas>
+    <div id="placeholder-text">Electron Orbital Visualizer</div>
+    <script type="module" src="./renderer.ts"></script>
+  </body>
+</html>
