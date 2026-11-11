@@ -18,6 +18,7 @@ function createWindow(): void {
     width: bounds.width,
     height: bounds.height,
     show: false,
+    icon: join(__dirname, '../../build/icon.png'), // Added App Icon
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       nodeIntegration: false,
