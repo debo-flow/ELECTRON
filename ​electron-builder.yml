@@ -1,0 +1,26 @@
+appId: com.deborudrade.orbitalvisualizer
+productName: Electron Orbital Visualizer
+directories:
+  output: release
+  buildResources: build
+
+# Publish draft releases automatically via GitHub Actions
+publish:
+  provider: github
+  releaseType: draft
+
+win:
+  target: [nsis, portable]
+  icon: build/icon.ico
+
+mac:
+  category: public.app-category.education
+  target:
+    - target: default
+      arch: [x64, arm64]
+  icon: build/icon.icns
+
+linux:
+  category: Science
+  target: [AppImage, deb]
+  icon: build/icon.png
