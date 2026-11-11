@@ -1,8 +1,14 @@
-import { contextBridge } from 'electron';
+import { contextBridge, ipcRenderer } from 'electron';
 
 const api = {
   ping: () => 'pong',
-  getAppVersion: () => process.versions.electron
+  getAppVersion: () => process.versions.electron,
+  loadSettings: () => ipcRenderer.invoke('settings:load'),
+  saveSettings: (data: any) => ipcRenderer.send('settings:save', data),
+  saveScreenshot: (dataUrl: string) => ipcRenderer.invoke('save-screenshot', dataUrl),
+  onMenuAction: (callback: (action: string) => void) => {
+    ipcRenderer.on('menu-action', (_, action) => callback(action));
+  }
 };
 
 if (process.contextIsolated) {
@@ -12,6 +18,6 @@ if (process.contextIsolated) {
     console.error(error);
   }
 } else {
-  // @ts-ignore (handled in global type def)
+  // @ts-ignore
   window.api = api;
 }
